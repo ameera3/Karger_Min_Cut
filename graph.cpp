@@ -158,6 +158,7 @@ unsigned int Graph::Karger() {
 	Vertex* compSource;
 	Vertex* compDest;
 
+	// keep contracting until only two vertices left
 	while( V > 2 ){
 		i = (rand() % E);
 		compSource = find((edges[i])->source);
