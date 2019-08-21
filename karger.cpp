@@ -43,6 +43,7 @@ int main(int argc, char** argv)
 	// create a new instance of graph
 	Graph* G = new Graph();
 
+	// load graph from text file
 	G->loadFromFile(argv[IN_IDX]);
 	unsigned int V = (G->vertex_map).size();
 	unsigned int minCut = std::numeric_limits<unsigned int>::max();

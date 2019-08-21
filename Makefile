@@ -1,6 +1,6 @@
 # Change the CXX variable assignment at your own risk.
 CXX ?= g++ 
-CXXFLAGS=-std=c++11 -Wall # -O2
+CXXFLAGS=-std=c++11 -Wall 
 LDFLAGS=-g
 
 all: karger 
