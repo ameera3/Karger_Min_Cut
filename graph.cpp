@@ -14,6 +14,7 @@
 #include <stdlib.h> 
 #include <time.h> 
 #include "graph.hpp"
+#include <limits>
 
 using namespace std;
 
@@ -30,55 +31,58 @@ Graph::Graph(void) {}
  * return true if file was loaded sucessfully, false otherwise
  */
 bool Graph::loadFromFile(const char* filename) {
-        
-	// used to get each line from input file
-        string line;
 
-        // input file stream
-        ifstream * in = new ifstream(filename);
+	// used to get each line from input file
+	string line;
+
+	// input file stream
+	ifstream * in = new ifstream(filename);
 
 	// Raise an error if file can't be read and return false
-    	if (in->eof()) {
-        	cerr << "Failed to read " << filename << "!\n";
-        	return false;
-    	}
+	if (in->eof()) {
+		cerr << "Failed to read " << filename << "!\n";
+		return false;
+	}
 
-        while (getline(*in, line)) {
-                stringstream ss;
-                // Storing the line into stringstream
-                ss << line;
+	while (getline(*in, line)) {
+		stringstream ss;
+		// Storing the line into stringstream
+		ss << line;
 
-                // Running loop till the end of the stream
-                string temp;
-                unsigned int found = 0;
-                unsigned int currentVertex;
-                // extracting vertex number from stream;
-                ss >> temp;
-                if( stringstream(temp) >> currentVertex ){
+		// Running loop till the end of the stream
+		string temp;
+		unsigned int found = std::numeric_limits<unsigned int>::max();
+		unsigned int currentVertex;
+		// extracting vertex number from stream;
+		ss >> temp;
+		if( stringstream(temp) >> currentVertex ){
 
-			Vertex* vertex = new Vertex(currentVertex);
-            		vertex->parent = vertex;
+			Vertex * vertex = new Vertex(currentVertex);
+			vertex->parent = vertex;
 			vertex_map[currentVertex] = vertex;
-                        while (!ss.eof()) {
+			while (!ss.eof()) {
 
-                                // extracting word by word
-                                ss >> temp;
+				// extracting word by word
+				ss >> temp;
 
-                                /* Checking the given word is integer or not */
-                                if ((stringstream(temp) >> found) 
-					&& (found > currentVertex)){
-                                        Edge* edge = new Edge(vertex_map[currentVertex], 
-							vertex_map[found]);
+				/* Checking the given word is integer or not */
+				if ( (stringstream(temp) >> found) 
+						&& (found < currentVertex) ){
+					Edge* edge = new Edge(vertex_map[found], 
+							vertex_map[currentVertex]);
 					edges.push_back(edge);
-                                }
-                        }
-                }
-                ss.str("");
-        }
-        
+				}
+
+				/* To save from space at the end of string */
+				temp = ""; 
+			}
+		}
+		ss.str("");
+	}
+
 	delete in;
 	return true;
-        
+
 }
 
 /*
@@ -95,10 +99,11 @@ bool Graph::loadFromFile(const char* filename) {
 
 Vertex* Graph::find( Vertex* n ) { 
 
-    if (n != n->parent) {
-        n->parent = find(n->parent); 
-    }                             
-    return n->parent; 
+	if (n != n->parent) {
+		n->parent = find(n->parent); 
+	}                             
+	return n->parent; 
+
 } 
 
 /*
@@ -115,46 +120,46 @@ Vertex* Graph::find( Vertex* n ) {
 
 void Graph::merge(Vertex* u, Vertex* v) { 
 
-    Vertex* uParent = find(u); 
-    Vertex* vParent = find(v); 
+	Vertex* uParent = find(u); 
+	Vertex* vParent = find(v); 
 
-    /* if two sets are unioned and have different ranks, the resulting set's 
-     * rank is the larger of the two. Attach the shorter tree to the root of 
-     * the taller tree. Thus, the resulting tree is no taller than the 
-     * original trees.
-     */  
-    if (uParent->rank > vParent->rank) { 
-        vParent->parent = uParent; 
-    }    
-    else { 
-        uParent->parent = vParent; 
-    }
+	/* if two sets are unioned and have different ranks, the resulting set's 
+	 * rank is the larger of the two. Attach the shorter tree to the root of 
+	 * the taller tree. Thus, the resulting tree is no taller than the 
+	 * original trees.
+	 */  
+	if (uParent->rank > vParent->rank) { 
+		vParent->parent = uParent; 
+	}    
+	else { 
+		uParent->parent = vParent; 
+	}
 
-    /* If two sets are unioned and have the same rank, the resulting set's 
-     * rank is one larger; When we attach the tree to the other tree, the
-     * resulting tree is taller by one node
-     */  
-    if (uParent->rank == vParent->rank) { 
-        ++vParent->rank; 
-    }
+	/* If two sets are unioned and have the same rank, the resulting set's 
+	 * rank is one larger; When we attach the tree to the other tree, the
+	 * resulting tree is taller by one node
+	 */  
+	if (uParent->rank == vParent->rank) { 
+		++vParent->rank; 
+	}
 } 
 
- /*
-  * Karger's Min-Cut Algorithm
-  *            
-  */
+/*
+ * Karger's Min-Cut Algorithm
+ *            
+ */
 
 unsigned int Graph::Karger() {
-	
+
 	unsigned int V = vertex_map.size();
 	unsigned int E = edges.size();
 	unsigned int i;
 	unsigned int cutEdges = 0;
 	Vertex* compSource;
 	Vertex* compDest;
-	
-	while( V >= 2 ){
-		i = rand() % E;
+
+	while( V > 2 ){
+		i = (rand() % E);
 		compSource = find((edges[i])->source);
 		compDest = find((edges[i])->dest);
 		if( compSource == compDest ){
@@ -164,7 +169,7 @@ unsigned int Graph::Karger() {
 			merge(compSource, compDest);
 			--V;
 		}	
-  	}
+	}
 
 	for(i = 0; i < edges.size(); ++i){
 		compSource = find((edges[i])->source);
@@ -195,11 +200,11 @@ void Graph::reset() {
 
 Graph::~Graph() {
 
-    for ( auto it = vertex_map.begin(); it != vertex_map.end(); ++it ){
-        delete it->second;
-    }
-    for ( unsigned int i = 0; i < edges.size(); ++i ){
-        delete edges[i];
-    }
+	for ( auto it = vertex_map.begin(); it != vertex_map.end(); ++it ){
+		delete it->second;
+	}
+	for ( unsigned int i = 0; i < edges.size(); ++i ){
+		delete edges[i];
+	}
 
 }

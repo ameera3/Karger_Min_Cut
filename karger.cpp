@@ -19,6 +19,7 @@
 #include <stdlib.h> 
 #include <time.h>
 #include <math.h> 
+#include <limits>
 #include "graph.hpp"
 
 // argv index of input file
@@ -46,8 +47,9 @@ int main(int argc, char** argv)
 	unsigned int V = (G->vertex_map).size();
 	unsigned int minCut = std::numeric_limits<unsigned int>::max();
 	unsigned int repeat = (unsigned int) ceil(pow(V,2)*log(V));	
-	for(unsigned int i = 0; i < repeat; ++i) {
-		unsigned int thisCut = G->Karger();
+
+	for(unsigned int i = 0; i < repeat; ++i) { 
+	  unsigned int thisCut = G->Karger();
 		if( thisCut < minCut ){
 			minCut = thisCut;
 		}	
