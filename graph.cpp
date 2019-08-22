@@ -65,7 +65,12 @@ bool Graph::loadFromFile(const char* filename) {
 				// extracting word by word
 				ss >> temp;
 
-				/* Checking the given word is integer or not */
+				/* Check if word is integer or not and check
+                                 * if it is less than currentVertex. If so,
+				 * add the edge to the list of edges. Recall
+				 * that we will store each edge with the lower
+				 * valued vertex first. 
+				 */
 				if ( (stringstream(temp) >> found) 
 						&& (found < currentVertex) ){
 					Edge* edge = new Edge(vertex_map[found], 
@@ -77,9 +82,12 @@ bool Graph::loadFromFile(const char* filename) {
 				temp = ""; 
 			}
 		}
+
+		// reset the string stream to be empty
 		ss.str("");
 	}
 
+	// no memory leaks here
 	delete in;
 	return true;
 
@@ -160,6 +168,11 @@ unsigned int Graph::Karger() {
 
 	// keep contracting until only two vertices left
 	while( V > 2 ){
+
+		/* choose a random edge. If its endpoints
+		 * are in two different components, then
+		 * contract the edge.
+		 */
 		i = (rand() % E);
 		compSource = find((edges[i])->source);
 		compDest = find((edges[i])->dest);
@@ -172,6 +185,10 @@ unsigned int Graph::Karger() {
 		}	
 	}
 
+	/* do a linear scan through the edges to check
+         * if each edge's endpoints are in different 
+         * components. Increment cutEdges if yes.
+	 */
 	for(i = 0; i < edges.size(); ++i){
 		compSource = find((edges[i])->source);
 		compDest = find((edges[i])->dest);
@@ -185,6 +202,7 @@ unsigned int Graph::Karger() {
 
 /* 
  * Resets the ranks and parents of all the vertices
+ * as we need to run Karger multiple times.
  */
 void Graph::reset() {
 
